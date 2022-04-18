@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>魔力FA</title>
+    <link rel="stylesheet" href="layui/css/layui.css">
+    <!-- <link rel="stylesheet" href="css/FAindex.css"> -->
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #66cc;
+        }
+
+        .FAbox {
+            width: 80%;
+            box-sizing: border-box;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 3px solid #fff;
+            border-collapse: collapse;
+            overflow: hidden;
+            cursor: default;
+            user-select: none;
+        }
+
+        .FAbox li {
+            float: left;
+            box-sizing: border-box;
+            width: 25%;
+            height: 80px;
+            text-align: center;
+            font-size: 50px;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #fff;
+        }
+
+        .FAbox .zero {
+            width: 75%;
+        }
+
+        .FAbox .low {
+            position: relative;
+        }
+
+        .FAbox .low::before {
+            content: '.';
+            position: absolute;
+            bottom: 1%;
+            left: 47%;
+        }
+
+        .FAbox li:hover {
+            background-color: #66ccff;
+            color: #fff;
+        }
+
+        .FAbox .see {
+            background-color: #66ccff;
+            color: #fff;
+        }
+
+        .FAbox .up {
+            position: relative;
+        }
+
+        .FAbox .up::before {
+            content: '.';
+            line-height: 0;
+            position: absolute;
+            top: 1%;
+            left: 47%;
+        }
+        #tip{
+            position: fixed;
+            top: 50px;
+            left: 50%;
+            transform: translate(-50%,0);
+            width: 70%;
+            height: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <audio src="" id="voice" autoplay style="display: none;"></audio>
+
+    <input type="text" placeholder="手机端可在这输入 F 实现开启 / 关闭" id="tip">
+
+    <ul class="FAbox">
+
+    </ul>
+
+    <script src="layui/layui.all.js"></script>
+    <script src="js/jquery.js"></script>
+    <script>
+
+        let str='你好 JavaScript';
+        let pattern=/S/;
+        console.log(pattern.test(str)); //true
+
+
+        // 基础FA音
+        $(function () {
+
+            // 布局渲染
+            let FAbox = $('.FAbox')[0];
+            let scale = [{ data: 'low', type: 'd' }, { data: '', type: '0' }, { data: 'up', type: '1' }];
+            for (let z = 0; z < 3; z++) {
+                for (let i = 1; i <= 7; i++) {
+                    let li = document.createElement('li');
+                    li.className = scale[z].data;
+                    li.setAttribute('FAtype', scale[z].type + i);
+                    li.innerHTML = i;
+                    FAbox.append(li);
+                }
+            }
+            // 赋值 空
+            let zero = document.createElement('li');
+            zero.className = 'zero';
+            zero.innerHTML = '0';
+            zero.setAttribute('FAtype', '00');;
+            FAbox.append(zero);
+
+            // 赋值 FA 音
+            $('.FAbox').on('mousedown', 'li', function () {
+                console.log($(this)[0].getAttribute('FAtype'));
+                $('#voice').attr('src', 'video/' + $(this)[0].getAttribute('FAtype') + '.mp3');
+            })
+
+            // 预设旋律 打上FA火
+            let FaMiuse = '12-13-15-11-12-13-15-11-12-13-15-16-12-13-06-11';
+            // 进行乐器分组
+            FaMiuse = FaMiuse.split('-');
+            // 校验
+            console.log(FaMiuse);
+
+            // 起始位置
+            let smmfa = 0;
+            // 定时器
+            let timer = null;
+            let timer_2 = null;
+            // 阀
+            let autoFa = true;
+
+
+            $(document).on('keyup', function (e) {
+                if (e.keyCode == 70) {
+                    if (autoFa) {
+                        // 阀
+                        autoFa = false;
+                        // 提示信息
+                        layer.msg('自动播放中');
+                        // 阻止按钮单击事件 扰乱旋律
+                        $('.FAbox').off('mousedown');
+                        // 自动播放 间隔 5s
+                        timer_2 = setInterval(() => {
+                            // 循环曲谱
+                            smmfa == FaMiuse.length - 1 ? smmfa = 0 : smmfa = smmfa;
+                            // 播放
+                            $('#voice')[0].src = 'video/' + FaMiuse[smmfa] + '.mp3';
+                            applyHTML();
+                            // 下一个 音调
+                            smmfa++;
+                        }, 500);
+                    } else {
+                        layer.msg('关闭 FA');
+                        // 清除 定时器
+                        clearInterval(timer_2);
+                        $('.FAbox li').removeClass('see');
+                        // 初始化 阀
+                        autoFa = true;
+                        // 重新绑定 单击事件 播放 FA音
+                        // 赋值 FA 音
+                        $('.FAbox').on('mousedown', 'li', function () {
+                            console.log($(this)[0].getAttribute('FAtype'));
+                            $('#voice').attr('src', 'video/' + $(this)[0].getAttribute('FAtype') + '.mp3');
+                        })
+                    }
+                }
+            });
+
+
+            function applyHTML() {
+                $('.FAbox [FAtype=' + FaMiuse[smmfa] + ']').addClass('see').siblings().removeClass('see');
+            }
+        })
+    </script>
+</body>
+
+</html>
